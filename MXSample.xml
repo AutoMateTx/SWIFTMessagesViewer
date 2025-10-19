@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.10">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>MSG-20251013-001</MsgId>
+      <CreDtTm>2025-10-13T10:30:00</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId>
+        <EndToEndId>E2E-REF-98765</EndToEndId>
+      </PmtId>
+      <Amt>
+        <InstdAmt Ccy="EUR">2500.00</InstdAmt>
+      </Amt>
+      <ChrgBr>SLEV</ChrgBr>
+      <Dbtr>
+        <Nm>John Doe</Nm>
+      </Dbtr>
+      <DbtrAcct>
+        <Id><IBAN>DE89370400440532013000</IBAN></Id>
+      </DbtrAcct>
+      <DbtrAgt>
+        <FinInstnId><BICFI>COBADEFFXXX</BICFI></FinInstnId>
+      </DbtrAgt>
+      <Cdtr>
+        <Nm>Marie Dupont</Nm>
+      </Cdtr>
+      <CdtrAcct>
+        <Id><IBAN>FR7630006000011234567890185</IBAN></Id>
+      </CdtrAcct>
+      <CdtrAgt>
+        <FinInstnId><BICFI>BNPAFRPPXXX</BICFI></FinInstnId>
+      </CdtrAgt>
+      <RmtInf>
+        <Ustrd>Invoice #12345</Ustrd>
+      </RmtInf>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>

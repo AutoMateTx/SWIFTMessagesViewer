@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.10">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>REF1234567890</MsgId>
+      <CreDtTm>2025-10-13T10:00:00</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <InitgPty>
+        <Nm>John Doe</Nm>
+      </InitgPty>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId>
+        <EndToEndId>E2E-REF-20251013</EndToEndId>
+      </PmtId>
+      <Amt>
+        <InstdAmt Ccy="EUR">10000.00</InstdAmt>
+      </Amt>
+      <Dbtr>
+        <Nm>John Doe</Nm>
+        <PstlAdr>
+          <Ctry>DE</Ctry>
+          <TownName>Berlin</TownName>
+        </PstlAdr>
+      </Dbtr>
+      <Cdtr>
+        <Nm>Marie Dupont</Nm>
+        <PstlAdr>
+          <Ctry>FR</Ctry>
+          <TownName>Paris</TownName>
+        </PstlAdr>
+      </Cdtr>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>

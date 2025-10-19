@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SWIFT Message Analyzer | Professional Viewer</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏦</text></svg>">
+  <style>
+    :root {
+      --primary: #0d47a1;
+      --primary-light: #1976d2;
+      --secondary: #388e3c;
+      --light-bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+      --radius: 12px;
+      --font-main: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-main);
+      background-color: var(--light-bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--primary), #0d47a1);
+      color: white;
+      padding: 24px 20px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-weight: 600;
+      font-size: 1.8rem;
+      margin: 0;
+    }
+
+    .header p {
+      opacity: 0.9;
+      margin-top: 8px;
+      font-size: 1.05rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 20px;
+    }
+
+    .upload-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 40px 30px;
+      text-align: center;
+      border: 2px dashed #cbd5e1;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      margin-bottom: 30px;
+    }
+
+    .upload-card:hover {
+      border-color: var(--primary-light);
+      background-color: #f0f7ff;
+    }
+
+    .upload-card h2 {
+      margin: 0 0 12px;
+      color: var(--primary);
+    }
+
+    .upload-card p {
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    #fileInput { display: none; }
+
+    .message-section {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 30px;
+      box-shadow: var(--shadow);
+    }
+
+    .section-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #edf2f7;
+    }
+
+    /* Flow Diagram */
+    .flow-diagram {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin: 20px 0;
+      padding: 20px;
+      background: #f0f9ff;
+      border-radius: var(--radius);
+      border: 1px solid #bae6fd;
+    }
+
+    .flow-node {
+      background: white;
+      border: 2px solid var(--primary-light);
+      border-radius: 10px;
+      padding: 14px 20px;
+      text-align: center;
+      min-width: 140px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--primary);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .flow-arrow {
+      color: var(--primary-light);
+      font-size: 1.8rem;
+      font-weight: bold;
+      line-height: 1;
+    }
+
+    /* Table */
+    .fields-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    .fields-table th {
+      background: var(--primary);
+      color: white;
+      text-align: left;
+      padding: 14px 16px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .fields-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .fields-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .fields-table tr:hover {
+      background-color: #f8fafc;
+    }
+
+    .tag-col {
+      font-family: monospace;
+      font-weight: 600;
+      color: var(--primary);
+      width: 160px;
+      background: #f0f7ff;
+      border-right: 1px solid #e2e8f0;
+    }
+
+    .desc-col {
+      color: var(--text-muted);
+      font-style: italic;
+      font-size: 0.95rem;
+      padding-bottom: 6px;
+    }
+
+    .value-col {
+      font-family: monospace;
+      white-space: pre-wrap;
+      color: #1e293b;
+    }
+
+    .error-banner {
+      background: #fef2f2;
+      border-left: 4px solid var(--danger);
+      padding: 16px;
+      border-radius: var(--radius);
+      color: #b91c1c;
+      margin: 20px 0;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+      margin-top: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .flow-diagram {
+        flex-direction: column;
+        gap: 12px;
+      }
+      .flow-arrow {
+        transform: rotate(90deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>SWIFT Message Analyzer</h1>
+    <p>Professional Viewer for MT & MX Messages</p>
+  </div>
+
+  <div class="container">
+    <div class="upload-card" id="dropZone">
+      <h2>📁 Upload SWIFT Message</h2>
+      <p>Supports MT (.txt) and MX (.xml) files</p>
+      <input type="file" id="fileInput" accept=".txt,.xml,.mt,.mx" />
+    </div>
+
+    <div id="output"></div>
+
+    <div class="footer">
+      SWIFT Message Viewer • For Compliance & Operations Teams
+    </div>
+  </div>
+
+  <script>
+    // === Field Descriptions ===
+    const MT_FIELD_DESCRIPTIONS = {
+      '20': 'Transaction Reference – Unique identifier assigned by the ordering institution',
+      '23B': 'Bank Operation Code – e.g., CRED for credit transfer',
+      '32A': 'Value Date / Currency / Amount – Settlement details',
+      '50K': 'Ordering Customer (Unstructured) – Name and address in free format',
+      '50F': 'Ordering Customer (Structured) – ISO 20022-compliant address blocks',
+      '51A': 'Sending Institution – BIC of the institution initiating the message',
+      '52A': 'Ordering Institution – BIC of the customer’s bank',
+      '53A': 'Sender’s Correspondent – BIC of sender’s intermediary',
+      '54A': 'Receiver’s Correspondent – BIC of receiver’s intermediary',
+      '56A': 'Intermediary Bank – BIC of institution through which payment is routed',
+      '57A': 'Account With Institution – BIC of beneficiary’s bank (final receiver)',
+      '58A': 'Beneficiary Institution – BIC of institution holding beneficiary account',
+      '59': 'Beneficiary Customer – Account number and name/address',
+      '59A': 'Beneficiary Customer (BIC/Account)',
+      '70': 'Remittance Information – Invoice or reference details',
+      '71A': 'Details of Charges – OUR (sender pays), BEN (beneficiary pays), SHA (shared)',
+      '72': 'Sender to Receiver Information – Regulatory or narrative instructions',
+      '25': 'Account Identification – IBAN or account number',
+      '28C': 'Statement Number / Sequence',
+      '60F': 'Opening Balance – Format: C/D + YYMMDD + Currency + Amount',
+      '61': 'Statement Line – Date, entry type, amount, transaction reference',
+      '86': 'Narrative – Additional information for the account owner',
+      '62F': 'Closing Balance'
+    };
+
+    const MX_FIELD_DESCRIPTIONS = {
+      'MsgId': 'Message Identification – Unique end-to-end ID',
+      'CreDtTm': 'Creation Date Time – When the message was created',
+      'NbOfTxs': 'Number of Transactions',
+      'PmtInfId': 'Payment Information Identification',
+      'EndToEndId': 'End-to-End Identification – Unique transaction reference',
+      'InstdAmt': 'Instructed Amount – Amount to be transferred (with currency)',
+      'ChrgBr': 'Charge Bearer – Shared (SLEV), Borne by Creditor (CRED), etc.',
+      'DbtrNm': 'Debtor Name – Payer name',
+      'DbtrAcctIBAN': 'Debtor Account (IBAN)',
+      'DbtrAgtBIC': 'Debtor Agent (BIC) – Payer’s bank',
+      'CdtrNm': 'Creditor Name – Beneficiary name',
+      'CdtrAcctIBAN': 'Creditor Account (IBAN)',
+      'CdtrAgtBIC': 'Creditor Agent (BIC) – Beneficiary’s bank',
+      'Ustrd': 'Unstructured Remittance Information',
+      'AccountIBAN': 'Account Identification (IBAN)',
+      'OpeningBalance': 'Opening Ledger Balance',
+      'ClosingBalance': 'Closing Ledger Balance',
+      'EntryAmount': 'Entry Amount with Debit/Credit Indicator',
+      'EntryNarrative': 'Entry Narrative / Description'
+    };
+
+    const MT_MESSAGE_TYPES = {
+      '103': { name: 'MT103', desc: 'Single Customer Credit Transfer – End-to-end customer payment' },
+      '202': { name: 'MT202', desc: 'Financial Institution Transfer – Bank-to-bank liquidity movement' },
+      '940': { name: 'MT940', desc: 'Customer Statement – Detailed account statement from bank to customer' }
+    };
+
+    const MX_MESSAGE_TYPES = {
+      'pacs.008': { name: 'pacs.008.001.xx', desc: 'Customer Credit Transfer – ISO 20022 equivalent of MT103' },
+      'camt.053': { name: 'camt.053.001.xx', desc: 'Bank-to-Customer Statement – ISO 20022 account statement' }
+    };
+
+    // === Setup ===
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const output = document.getElementById('output');
+
+    const preventDefaults = (e) => { e.preventDefault(); e.stopPropagation(); };
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
+      dropZone.addEventListener(ev, preventDefaults, false);
+    });
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      if (files.length) processFile(files[0]);
+    }, false);
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length) processFile(e.target.files[0]);
+    }, false);
+
+    function processFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        output.innerHTML = '';
+        try {
+          const content = e.target.result;
+          if (file.name.endsWith('.xml') || content.trim().startsWith('<')) {
+            parseMX(content);
+          } else {
+            parseMT(content);
+          }
+        } catch (err) {
+          output.innerHTML = `<div class="error-banner">❌ Error: ${err.message}</div>`;
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '<', '>': '>', '"': '&quot;', "'": '&#039;' }[m]));
+    }
+
+    // === MT Parser ===
+    function parseMT(text) {
+      const lines = text.split(/\r?\n/);
+      let fields = [];
+      let currentTag = '', currentValue = '';
+
+      for (let line of lines) {
+        line = line.trim();
+        if (!line || line.startsWith('{') || line.startsWith('}')) continue;
+        const match = line.match(/^:(\d{2,3}[A-Z]?):(.*)/);
+        if (match) {
+          if (currentTag) fields.push({ tag: currentTag, value: currentValue.trim() });
+          currentTag = match[1];
+          currentValue = match[2];
+        } else if (currentTag) {
+          currentValue += '\n' + line;
+        }
+      }
+      if (currentTag) fields.push({ tag: currentTag, value: currentValue.trim() });
+
+      if (fields.length === 0) throw new Error('No valid SWIFT fields found.');
+
+      let msgInfo = MT_MESSAGE_TYPES['103'];
+      const tags = fields.map(f => f.tag);
+      if (tags.includes('21') && !tags.includes('59')) msgInfo = MT_MESSAGE_TYPES['202'];
+      else if (tags.includes('60F') && tags.includes('62F')) msgInfo = MT_MESSAGE_TYPES['940'];
+
+      let participants = [];
+      if (msgInfo.name === 'MT103') {
+        const orderingCustomer = extractNameFromField(fields, ['50K', '50F']) || 'Ordering Customer';
+        const orderingBank = extractBICFromField(fields, ['52A']) || 'Ordering Bank';
+        const intermediary = extractBICFromField(fields, ['56A']) || extractBICFromField(fields, ['53A', '54A']);
+        const beneficiaryBank = extractBICFromField(fields, ['57A', '58A']) || 'Beneficiary Bank';
+        const beneficiaryCustomer = extractNameFromField(fields, ['59', '59A']) || 'Beneficiary Customer';
+
+        participants = [orderingCustomer, orderingBank];
+        if (intermediary) participants.push(intermediary);
+        participants.push(beneficiaryBank, beneficiaryCustomer);
+      } else if (msgInfo.name === 'MT202') {
+        participants = ['Sending Bank', 'Intermediary Bank', 'Receiving Bank'];
+      } else if (msgInfo.name === 'MT940') {
+        participants = ['Bank', 'Customer'];
+      } else {
+        participants = ['Sender', 'Receiver'];
+      }
+
+      renderOutput(msgInfo, fields, participants);
+    }
+
+    function extractNameFromField(fields, tags) {
+      for (const tag of tags) {
+        const f = fields.find(x => x.tag === tag);
+        if (f) {
+          const lines = f.value.split('\n');
+          return lines[0].replace(/^\/[A-Z0-9\s]*\s*/, '').trim();
+        }
+      }
+      return null;
+    }
+
+    function extractBICFromField(fields, tags) {
+      for (const tag of tags) {
+        const f = fields.find(x => x.tag === tag);
+        if (f) {
+          const val = f.value.trim();
+          if (/^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(val)) {
+            return val;
+          }
+        }
+      }
+      return null;
+    }
+
+    // === MX Parser (Robust) ===
+    function parseMX(xmlText) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(xmlText, 'application/xml');
+      if (doc.querySelector('parsererror')) throw new Error('Invalid XML');
+
+      // Normalize namespace handling
+      function query(doc, selector) {
+        // Try with namespace first, then without
+        let result = doc.querySelector(selector);
+        if (!result && doc.documentElement.namespaceURI) {
+          // Use universal namespace
+          const all = doc.evaluate(
+            selector.replace(/([A-Za-z]+)/g, '*[local-name()="$1"]'),
+            doc,
+            null,
+            XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+            null
+          );
+          if (all.snapshotLength > 0) return all.snapshotItem(0);
+        }
+        return result;
+      }
+
+      function queryAll(doc, selector) {
+        let result = doc.querySelectorAll(selector);
+        if (result.length === 0 && doc.documentElement.namespaceURI) {
+          // Fallback: use getElementsByTagName for simplicity in demo
+          const tagName = selector.split(' ').pop();
+          return doc.getElementsByTagName(tagName);
+        }
+        return result;
+      }
+
+      const root = doc.documentElement;
+      let msgInfo, participants = [], fields = [];
+
+      // Detect message type
+      const ns = root.namespaceURI || '';
+      if (ns.includes('pacs.008')) {
+        msgInfo = MX_MESSAGE_TYPES['pacs.008'];
+
+        // Extract from GrpHdr
+        const msgId = query(doc, 'MsgId')?.textContent?.trim();
+        const creDtTm = query(doc, 'CreDtTm')?.textContent?.trim();
+        const nbOfTxs = query(doc, 'NbOfTxs')?.textContent?.trim();
+
+        // Extract from CdtTrfTxInf
+        const endToEndId = query(doc, 'EndToEndId')?.textContent?.trim();
+        const instAmtEl = query(doc, 'InstdAmt');
+        const instAmt = instAmtEl ? `${instAmtEl.textContent} ${instAmtEl.getAttribute('Ccy') || ''}`.trim() : '';
+        const chrgBr = query(doc, 'ChrgBr')?.textContent?.trim();
+
+        const dbtrNm = query(doc, 'Dbtr Nm')?.textContent?.trim();
+        const dbtrAcct = query(doc, 'DbtrAcct Id IBAN')?.textContent?.trim() || query(doc, 'DbtrAcct Id Othr Id')?.textContent?.trim();
+        const dbtrAgt = query(doc, 'DbtrAgt FinInstnId BICFI')?.textContent?.trim() || query(doc, 'DbtrAgt FinInstnId ClrSysMmbId MmbId')?.textContent?.trim();
+
+        const cdtrNm = query(doc, 'Cdtr Nm')?.textContent?.trim();
+        const cdtrAcct = query(doc, 'CdtrAcct Id IBAN')?.textContent?.trim() || query(doc, 'CdtrAcct Id Othr Id')?.textContent?.trim();
+        const cdtrAgt = query(doc, 'CdtrAgt FinInstnId BICFI')?.textContent?.trim() || query(doc, 'CdtrAgt FinInstnId ClrSysMmbId MmbId')?.textContent?.trim();
+
+        const ustrd = query(doc, 'RmtInf Ustrd')?.textContent?.trim();
+
+        // Build fields
+        if (msgId) fields.push({ tag: 'MsgId', value: msgId });
+        if (creDtTm) fields.push({ tag: 'CreDtTm', value: creDtTm });
+        if (nbOfTxs) fields.push({ tag: 'NbOfTxs', value: nbOfTxs });
+        if (endToEndId) fields.push({ tag: 'EndToEndId', value: endToEndId });
+        if (instAmt) fields.push({ tag: 'InstdAmt', value: instAmt });
+        if (chrgBr) fields.push({ tag: 'ChrgBr', value: chrgBr });
+        if (dbtrNm) fields.push({ tag: 'DbtrNm', value: dbtrNm });
+        if (dbtrAcct) fields.push({ tag: 'DbtrAcctIBAN', value: dbtrAcct });
+        if (dbtrAgt) fields.push({ tag: 'DbtrAgtBIC', value: dbtrAgt });
+        if (cdtrNm) fields.push({ tag: 'CdtrNm', value: cdtrNm });
+        if (cdtrAcct) fields.push({ tag: 'CdtrAcctIBAN', value: cdtrAcct });
+        if (cdtrAgt) fields.push({ tag: 'CdtrAgtBIC', value: cdtrAgt });
+        if (ustrd) fields.push({ tag: 'Ustrd', value: ustrd });
+
+        // Build flow
+        participants = [
+          dbtrNm || 'Debtor',
+          dbtrAgt || 'Debtor Agent',
+          cdtrAgt || 'Creditor Agent',
+          cdtrNm || 'Creditor'
+        ];
+
+      } else if (ns.includes('camt.053')) {
+        msgInfo = MX_MESSAGE_TYPES['camt.053'];
+
+        const iban = query(doc, 'IBAN')?.textContent?.trim() || 'Account';
+        const openBalEl = doc.evaluate("//Bal[Tp/CdOrPrtry/Cd='OPBD']", doc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+        const closeBalEl = doc.evaluate("//Bal[Tp/CdOrPrtry/Cd='CLBD']", doc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+
+        const openAmt = openBalEl ? `${openBalEl.querySelector('Amt')?.textContent || ''} ${openBalEl.querySelector('Amt')?.getAttribute('Ccy') || ''}`.trim() : '';
+        const closeAmt = closeBalEl ? `${closeBalEl.querySelector('Amt')?.textContent || ''} ${closeBalEl.querySelector('Amt')?.getAttribute('Ccy') || ''}`.trim() : '';
+
+        if (iban) fields.push({ tag: 'AccountIBAN', value: iban });
+        if (openAmt) fields.push({ tag: 'OpeningBalance', value: openAmt });
+        if (closeAmt) fields.push({ tag: 'ClosingBalance', value: closeAmt });
+
+        const entries = queryAll(doc, 'Ntry');
+        for (let i = 0; i < Math.min(entries.length, 5); i++) {
+          const entry = entries[i];
+          const amtEl = entry.querySelector('Amt');
+          const amt = amtEl ? `${entry.querySelector('CdtDbtInd')?.textContent === 'CRDT' ? '+' : '-'}${amtEl.textContent} ${amtEl.getAttribute('Ccy') || ''}` : '';
+          const narr = entry.querySelector('Ustrd')?.textContent?.trim() || 'No narrative';
+          fields.push({ tag: `Entry${i+1}Amount`, value: amt });
+          fields.push({ tag: `Entry${i+1}Narrative`, value: narr });
+        }
+
+        participants = ['Bank', 'Account Owner'];
+
+      } else {
+        // Generic fallback
+        msgInfo = { name: 'MX (Generic)', desc: 'ISO 20022 XML Message' };
+        participants = ['Sender', 'Receiver'];
+        fields.push({ tag: 'Root', value: root.localName || 'Unknown' });
+      }
+
+      renderOutput(msgInfo, fields, participants);
+    }
+
+    // === Renderer ===
+    function renderOutput(msgInfo, fields, participants) {
+      let html = `
+        <div class="message-section">
+          <h2 class="section-title">${msgInfo.name} Message</h2>
+          <p style="color:var(--text-muted); margin-top:-12px;">${msgInfo.desc}</p>
+        </div>
+
+        <div class="message-section">
+          <h2 class="section-title">Message Flow</h2>
+          <div class="flow-diagram">
+      `;
+
+      participants.forEach((p, i) => {
+        html += `<div class="flow-node">${escapeHtml(p)}</div>`;
+        if (i < participants.length - 1) {
+          html += `<div class="flow-arrow">→</div>`;
+        }
+      });
+
+      html += `
+          </div>
+        </div>
+
+        <div class="message-section">
+          <h2 class="section-title">Message Fields</h2>
+          <table class="fields-table">
+            <thead>
+              <tr>
+                <th>Tag</th>
+                <th>Description</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      fields.forEach(f => {
+        const desc = MT_FIELD_DESCRIPTIONS[f.tag] || MX_FIELD_DESCRIPTIONS[f.tag] || 'Description not available';
+        html += `
+          <tr>
+            <td class="tag-col">${escapeHtml(f.tag)}</td>
+            <td class="desc-col">${desc}</td>
+            <td class="value-col">${escapeHtml(f.value)}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      output.innerHTML = html;
+    }
+  </script>
+</body>
+</html>
